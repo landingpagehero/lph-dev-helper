@@ -75,7 +75,7 @@ func CompileES6AndWriteToJsFile(es6Path string) {
 	jsPath := strings.Replace(es6Path, ".js6", ".js", 1)
 	_, err := exec.Command("sh", "-c", "traceur --script "+es6Path+"  --out "+jsPath).Output()
 	if err != nil {
-		log.Fatal("error:", err)
+		log.Fatal("error: ensure traceur is installed global (npm install -g traceur): error message was: ", err)
 		os.Exit(1)
 	}
 

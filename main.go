@@ -39,7 +39,6 @@ func CompileScssAndWriteToCssFile(scssPath string) {
 	compiledCss, err := CompileScss(scssPath)
 	if err != nil {
 		log.Fatal("error:", err)
-		os.Exit(1)
 	}
 
 	cssPath := strings.Replace(scssPath, ".scss", ".css", 1)
@@ -76,7 +75,6 @@ func CompileES6AndWriteToJsFile(es6Path string) {
 	_, err := exec.Command("sh", "-c", "traceur --script "+es6Path+"  --out "+jsPath).Output()
 	if err != nil {
 		log.Fatal("error: ensure traceur is installed global (npm install -g traceur): error message was: ", err)
-		os.Exit(1)
 	}
 
 	log.Println("compiled " + es6Path + " to " + jsPath)

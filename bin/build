@@ -1,0 +1,6 @@
+set -o errexit
+set -o nounset
+
+go build -o build/lph
+
+echo 'Executable has been created: build/lph'

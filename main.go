@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"os/exec"
 	"strings"
 
 	"github.com/bmatcuk/doublestar"
@@ -18,7 +19,7 @@ func main() {
 }
 
 func CompileAllFiles() {
-	files, err := doublestar.Glob("**/*.scss")
+	files, err := doublestar.Glob("**/*.{scss,js6}")
 
 	if err != nil {
 		return
@@ -27,6 +28,9 @@ func CompileAllFiles() {
 	for _, file := range files {
 		if IsScss(file) {
 			CompileScssAndWriteToCssFile(file)
+		}
+		if IsES6(file) {
+			CompileES6AndWriteToJsFile(file)
 		}
 	}
 }
@@ -67,8 +71,23 @@ func CompileScss(scssPath string) (compiledCss string, err error) {
 	return compiledCss, nil
 }
 
+func CompileES6AndWriteToJsFile(es6Path string) {
+	jsPath := strings.Replace(es6Path, ".js6", ".js", 1)
+	_, err := exec.Command("sh", "-c", "traceur --script "+es6Path+"  --out "+jsPath).Output()
+	if err != nil {
+		log.Fatal("error:", err)
+		os.Exit(1)
+	}
+
+	log.Println("compiled " + es6Path + " to " + jsPath)
+}
+
 func IsScss(path string) bool {
 	return strings.HasSuffix(path, ".scss")
+}
+
+func IsES6(path string) bool {
+	return strings.HasSuffix(path, ".js6")
 }
 
 func CreateWatcher() {
@@ -88,12 +107,20 @@ func CreateWatcher() {
 						log.Println("saw SCSS file created:", event.Name)
 						CompileScssAndWriteToCssFile(event.Name)
 					}
+					if IsES6(event.Name) {
+						log.Println("saw JS/ES6 file created:", event.Name)
+						CompileES6AndWriteToJsFile(event.Name)
+					}
 				}
 
 				if event.Op&fsnotify.Write == fsnotify.Write {
 					if IsScss(event.Name) {
 						log.Println("saw SCSS file modified:", event.Name)
 						CompileScssAndWriteToCssFile(event.Name)
+					}
+					if IsES6(event.Name) {
+						log.Println("saw JS/ES6 file modified:", event.Name)
+						CompileES6AndWriteToJsFile(event.Name)
 					}
 				}
 			case err := <-watcher.Errors:
@@ -107,6 +134,17 @@ func CreateWatcher() {
 		err = watcher.Add("./styles")
 	} else {
 		log.Println("no styles/ directory - not watching for SCSS file changes")
+	}
+
+	if FileExists("./scripts") {
+		log.Println("watching scripts/ directory for JS file changes")
+		err = watcher.Add("./scripts")
+	} else {
+		log.Println("no scripts/ directory - not watching for JS file changes")
+	}
+
+	if err != nil {
+		log.Fatal(err)
 	}
 
 	if err != nil {

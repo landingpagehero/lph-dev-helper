@@ -13,9 +13,25 @@ import (
 	"gopkg.in/fsnotify.v1"
 )
 
+/**
+ * If run without an argument, builds files in the current directory and watches for changes.
+ * If run with the argument "build", builds files in the current directory and exits.
+ * If run with the argument "watch", watches for changes in the current directory.
+ */
 func main() {
-	CompileAllFiles()
-	CreateWatcher()
+	if len(os.Args) > 1 {
+		command := os.Args[1]
+		if command == "build" {
+			CompileAllFiles()
+		} else if command == "watch" {
+			CreateWatcher()
+		} else {
+			log.Fatal("unknown argument: " + command)
+		}
+	} else {
+		CompileAllFiles()
+		CreateWatcher()
+	}
 }
 
 func CompileAllFiles() {

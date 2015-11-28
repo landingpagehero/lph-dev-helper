@@ -35,7 +35,7 @@ func main() {
 }
 
 func CompileAllFiles() {
-	files, err := doublestar.Glob("**/*.{scss,js6}")
+	files, err := doublestar.Glob("{styles,scripts}/*.{scss,js6}")
 
 	if err != nil {
 		return
